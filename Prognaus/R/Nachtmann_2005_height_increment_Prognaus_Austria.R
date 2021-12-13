@@ -251,18 +251,18 @@ Nachtmann_2005_height_increment_Prognaus_Austria <- function(species = "Picea ab
   }
 
   #Some species specific values, otherwise as other conifers.
-  if (species == 5) {
+  if (species == "Pinus nigra") {
     #Pinus nigra
     b0 <-  b0 - 194.7221
   }
-  if (species == 6) {
+  if (species == "Pinus cembra") {
     #Pinus cembra
     C <-  C  - 0.000000186
   }
 
   #No additional change for Pinus strobus.
 
-  if (species == 8) {
+  if (species == "Pinus strobus") {
     #Pseudotsuga menziesii
     b0 <-  b0   - 152.1846
     C <- C   - 0.000000168

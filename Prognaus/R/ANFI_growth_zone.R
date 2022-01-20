@@ -1,38 +1,44 @@
 #' Growth Zones for Austria (ANFI)
 #'
-#' @param Code 1:21.
+#' @description Returns the Austrian growth zone which the coordinate is placed
+#' in. If there is no match, growth zone will be 'Other', and a warning will be shown.
 #'
-#' @return Tibble.
+#' @param latitude Latitude, decimal
+#' @param longitude Longitude, decimal
+#' @param epsg EPSG for latitude and longitude (Default=4326).
+#'
+#' @return Text, Austrian growth zone.
 #' @export
 
 Austria_growth_zone <- function(
-  Code=1:21
+  latitude,
+  longitude,
+  epsg=4326
 ){
+  if(missing(latitude) | missing(longitude)) stop("Cannot calculate county, requires Latitude & Longitude.")
 
-  stopifnot(Code%in%c(1:21))
+  #Create a simple features point and provide it with a CRS.
+  point <- sf::st_sfc(sf::st_point(x=c(longitude,latitude)))
+  sf::st_crs(point) <- epsg
 
-  dplyr::tibble("Code"=c(1:21),"ANFI Wuchzbezirk Growth Region"=c(
-    "Austrian Part of the Bohemian Massif",
-    "Eastern pannonic semiarid region",
-    "Hills and plains between the Alps and the Danube, eastern part",
-    "Hills and plains between the Danube, western part",
-    "Kobernausserwald",
-    "Eastern edge of the Alps",
-    "Eastern Flysch Alps",
-    "Western Flysch Alps with humid climate",
-    "Northern calcareous Alps, eastern part",
-    "Northern calcareous Alps, western part",
-    "Northern central Alps, eastern part",
-    "Northern central Alps, western part",
-    "Central Alps",
-    "Inner central Alps with continental climate",
-    "Southern central Alps",
-    "Klagenfurt valley",
-    "Austrian Southern Alps",
-    "South-eastern edge of the Austrian Alps",
-    "Granite hills on the eastern edge of the Alps",
-    "South-eastern Hills and terraces",
-    "Mountains of the middle 'Burgenland'"
-  ))[Code,]
+  #Reproject to WGS84 if not already to match CRS for wuchsbezirk stored in internal data.
+  if(epsg!=4326){
+    assign(x="point",value=sf::st_transform(point,crs=4326))
+  }
+
+  area <- Prognaus:::wuchsbezirk$Wuchsnam[sf::st_within(point, Prognaus:::wuchsbezirk)[[1]]]
+
+  if(identical(area,character(0))){
+    warning("Outside known Growth Zones.")
+    return(
+      "Other"
+    )
+  } else {
+    return(
+      area
+    )
+  }
 
 }
+
+Vectorize(Austria_growth_zone)
